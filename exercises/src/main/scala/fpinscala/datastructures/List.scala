@@ -79,9 +79,23 @@ object List { // `List` companion object. Contains functions for creating and wo
     case Cons(x, xs) => Cons(x, init(xs))
   }
 
-  def length[A](l: List[A]): Int = sys.error("todo")
+  def length[A](l: List[A]): Int = foldRight(l,0)((_,b) => b+1)
 
-  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = sys.error("todo")
+  def foldLeft[A,B](l: List[A], z: B)(f: (B, A) => B): B = l match {
+    case Nil => z
+    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  }
 
-  def map[A,B](l: List[A])(f: A => B): List[B] = sys.error("todo")
+  def map[A,B](l: List[A])(f: A => B): List[B] = foldRight(l, List[B]())((x,xs) => Cons(f(x), xs))
+
+  def reverse[A](l: List[A]): List[A] = foldLeft(l, List[A]())((xs,x) => Cons(x, xs))
+
+  def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f: (A, B) => B): B = ???
+  def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] = ???
+  def concatenate[A,B](l: List[List[A]]): List[A] = ???
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = ???
+  def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = ???
+  def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] = ???
+  def zipWith[A,B,C](a: List[A], b: List[B])(f: (A,B) => C): List[C] = ???
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
 }
