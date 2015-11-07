@@ -90,12 +90,28 @@ object List { // `List` companion object. Contains functions for creating and wo
 
   def reverse[A](l: List[A]): List[A] = foldLeft(l, List[A]())((xs,x) => Cons(x, xs))
 
-  def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f: (A, B) => B): B = ???
-  def appendViaFoldLeft[A](a1: List[A], a2: List[A]): List[A] = ???
-  def concatenate[A,B](l: List[List[A]]): List[A] = ???
-  def filter[A](l: List[A])(f: A => Boolean): List[A] = ???
-  def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = ???
-  def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] = ???
-  def zipWith[A,B,C](a: List[A], b: List[B])(f: (A,B) => C): List[C] = ???
-  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = ???
+  def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f: (A, B) => B): B = foldLeft(reverse(as),z)((a,b) => f(b,a))
+  def appendViaFoldRight[A](a1: List[A], a2: List[A]): List[A] = foldRight(a1,a2)(Cons(_,_))
+  def concatenate[A,B](l: List[List[A]]): List[A] = foldRight(l, List[A]())(append)
+  def filter[A](l: List[A])(f: A => Boolean): List[A] = foldRight(l, Nil:List[A])((x,xs) => if(f(x)) Cons(x,xs) else xs )
+  def flatMap[A,B](l: List[A])(f: A => List[B]): List[B] = concatenate(map(l)(f))
+  def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] = flatMap(l)(a => if(f(a)) List(a) else Nil)
+  def zipWith[A,B,C](a: List[A], b: List[B])(f: (A,B) => C): List[C] = (a,b) match {
+    case (Nil, _) => Nil
+    case (_,Nil)  => Nil
+    case (Cons(a,as), Cons(b,bs)) => Cons(f(a,b), zipWith(as,bs)(f))
+  }
+
+  @annotation.tailrec
+  def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l,prefix) match {
+    case (_,Nil) => true
+    case (Cons(h,t),Cons(h2,t2)) if h == h2 => startsWith(t, t2)
+    case _ => false
+  }
+  @annotation.tailrec
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = sup match {
+    case Nil => sub == Nil
+    case _ if startsWith(sup, sub) => true
+    case Cons(h,t) => hasSubsequence(t, sub)
+  }
 }
