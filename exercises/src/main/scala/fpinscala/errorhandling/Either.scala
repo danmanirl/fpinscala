@@ -1,18 +1,15 @@
 package fpinscala.errorhandling
 
-
-import fpinscala.errorhandling.Some
-
 import scala.{Option => _, Either => _, Left => _, Right => _, _} // hide std library `Option` and `Either`, since we are writing our own in this chapter
 
 sealed trait Either[+E,+A] {
  def map[B](f: A => B): Either[E, B] = this match {
-   case Right(x: A) => Right(f(x))
+   case Right(x) => Right(f(x))
    case Left(e) => Left(e)
  }
 
  def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
-   case Right(x: A) => f(x)
+   case Right(x) => f(x)
    case Left(e) => Left(e)
  }
 
@@ -36,7 +33,11 @@ object Either {
     input.foldRight[Either[E, List[B]]](Right(Nil))((a, eitherBs) => appendEithBs(f(a), eitherBs))
   }
 
-  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = 
+  def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] = {
+    es.foldLeft(Right(List.empty[A]): Either[E, List[A]]) {
+      (elist, e) => elist.map2(e)(_ :+ _)
+    }
+  }
 
   def mean(xs: IndexedSeq[Double]): Either[String, Double] = 
     if (xs.isEmpty) 
