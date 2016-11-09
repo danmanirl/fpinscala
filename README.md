@@ -7,7 +7,7 @@ private functional programming tutor without actually having one.
 
 Here's how to use this repository:
 
-Each chapter in the book develops a fully working library of functions
+Each   chapter in the book develops a fully working library of functions
 and data types, built up through a series of exercises and example code
 given in the book text. The shell of this working library and exercise
 stubs live in
