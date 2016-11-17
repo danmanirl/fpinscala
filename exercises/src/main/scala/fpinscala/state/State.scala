@@ -35,7 +35,7 @@ object RNG {
 //    case ((d1,d2), d3) => (d1,d2,d3)
 //  }(rng)
 //
-//  def ints(count: Int)(rng: RNG): (List[Int], RNG) = sequence(List.fill(count)(int))(rng)
+  def ints(count: Int): Rand[List[Int]] = State.sequence(List.fill(count)(int))
 //
 //    def map2fm[A,B,C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
 //      flatMap(ra)(a => flatMap(rb)(b => rng => (f(a, b), rng)))
@@ -95,5 +95,20 @@ object State {
 
   type Rand[A] = State[RNG, A]
 
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
+
+    def state(m: Machine): ((Int, Int), Machine) = ((m.coins, m.candies), m)
+
+    def step(input: Input)(machine: Machine) = {
+      (input, machine) match {
+        case (Coin, m@Machine(true, candies, coins)) => state(m.copy(locked=false))
+        case (Turn, m@Machine(false, candies, coins)) if candies > 0 => state(Machine(true, candies-1, coins+1))
+        case (_,m) => state(m)
+      }
+    }
+
+    val states: List[State[Machine,(Int,Int)]] = inputs.map(input => State((m: Machine) => step(input)(m)))
+
+    State.sequence(states).map(_.last)
+  }
 }
